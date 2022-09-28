@@ -3,7 +3,7 @@ from termcolor import cprint
 
 class Road:
 
-    def init(self, start, end, distance):
+    def __init__(self, start, end, distance):
         self.start = start
         self.end = end
         self.distance = distance
@@ -25,13 +25,16 @@ class Warehouse:
 
     def truck_arrived(self, truck):
         self.queue_in.append(truck)
+        self.place = self
         print('склад {} Прибыл грузовик {}'.format(self.name, truck))
 
     def get_next_truck(self):
-        pass
+        if self.queue_in:
+            truck = self.queue_in.pop()
+            return truck
 
     def truck_ready(self, truck):
-        self.queue_out.append()
+        self.queue_out.append(truck)
         print('{} грузовик {} готов'.format(self.name, truck))
 
     def act(self):
@@ -39,6 +42,7 @@ class Warehouse:
             truck = self.queue_out.pop()
             truck.go_to(road=self.road_out)
 class Vehicle:
+    total_fuel = 0
     fuel_rate = 0
 
     def __init__(self, model):
@@ -50,6 +54,8 @@ class Vehicle:
 
     def tank_up(self):
         self.fuel += 1000
+        Vehicle.total_fuel += 1000
+        print('{} заправился'.format(self.model))
 
 class Truck(Vehicle):
 
@@ -68,8 +74,11 @@ class Truck(Vehicle):
     def ride(self):
         if self.distance_to_target > self.velocity:
             self.distance_to_target -= self.velocity
-        print('{} едет по дороге. осталось'
-              '{}'.format(self.model, self.distance_to_target))
+            print('{} едет по дороге. осталось {}'.format(
+                self.model, self.distance_to_target))
+        else:
+            self.place.end.truck_arrived(self)
+            print('{} приехал '.format(self.model))
 
     def go_to(self, road):
         self.place = road
@@ -80,11 +89,11 @@ class Truck(Vehicle):
         if self.fuel <= 10:
             self.tank_up()
         elif isinstance(self.place, Road):
-            self.ride
+            self.ride()
 
 class AutoLoader(Vehicle):
 
-    def __init__(self, model,bucket_capacity=100, warehouse=None, role='loader'):
+    def __init__(self, model, bucket_capacity=100, warehouse=None, role='loader'):
         super().__init__(model=model)
         self.bucket_capacity = bucket_capacity
         self.warehouse = warehouse
@@ -107,7 +116,7 @@ class AutoLoader(Vehicle):
 
     def load(self):
         truck_cargo_rest = self.truck.body_space - self.truck.cargo
-        if truck.cargo.rest >= self.bucket_capacity:
+        if truck_cargo_rest >= self.bucket_capacity:
             self.warehouse.content -= self.bucket_capacity
             self.truck.cargo += self.bucket_capacity
         else:
@@ -133,15 +142,15 @@ TOTAL_CARGO = 100000
 moscow = Warehouse(name='Москва',content=TOTAL_CARGO)
 piter = Warehouse(name='Питер',content=0)
 
-moscow_piter = Road(start=moscow, end=piter, distanse=715)
-piter_moscow = Road(start=piter, end=moscow, distanse=780)
+moscow_piter = Road(start=moscow, end=piter, distance=715)
+piter_moscow = Road(start=piter, end=moscow, distance=780)
 
 moscow.set_road_out(moscow_piter)
 piter.set_road_out(piter_moscow)
 
-loader_1 = AutoLoader(model='Bobcat', bucket_capacity=1000, warehouse=moscow
+loader_1 = AutoLoader(model='Bobcat', bucket_capacity=1000, warehouse=moscow,
                       role='loader')
-loader_2 = AutoLoader(model='lonking', bucket_capacity=500, warehouse=piter
+loader_2 = AutoLoader(model='lonking', bucket_capacity=500, warehouse=piter,
                       role='unloader')
 
 truck_1 = Truck(model='Камаз', body_space=5000)
@@ -154,7 +163,8 @@ hour = 0
 
 while piter.content < TOTAL_CARGO:
     hour += 1
-    cprint('--------------------1час-----------------------------', color='red')
+    cprint('--------------------час {}-----------------------'.format(
+        hour), color='red')
     truck_1.act()
     truck_2.act()
     loader_1.act()
@@ -167,3 +177,5 @@ while piter.content < TOTAL_CARGO:
     cprint(loader_2, color='cyan')
     cprint(moscow, color='cyan')
     cprint(piter, color='cyan')
+
+    cprint('всего затрачено {}'.format(Vehicle.total_fuel),color='red')
