@@ -1,4 +1,5 @@
 #модель доставки грузов
+from termcolor import cprint
 
 class Road:
 
@@ -34,41 +35,68 @@ class Vehicle:
     fuel_rate = 0
 
     def __init__(self, model):
-        pass
+        self.model = model
+        self.fuel = 0
 
     def __str__(self):
-        pass
+        return '{} топлива {}'.format(self.model, self.fuel)
 
     def tank_up(self):
-        pass
+        self.fuel += 1000
 
 class Truck(Vehicle):
 
     def __init__(self, model, body_space=1000):
-        pass
+        super().__init__(model=model)
+        self.body_space = body_space
+        self.cargo = 0
+        self.velocity = 100
+        self.place = None
+        self.distance_to_target = 0
 
     def __str__(self):
-        pass
+        res = super().__str__()
+        return res + 'Груза {}'.format(self.cargo)
 
     def ride(self):
-        pass
+        if self.distance_to_target > self.velocity:
+            self.distance_to_target -= self.velocity
+        print('{} едет по дороге. осталось'
+              '{}'.format(self.model, self.distance_to_target))
 
     def go_to(self, road):
-        pass
+        self.place = road
+        self.distance_to_target = road.distance
+        print('{} выехал в путь'.format(self.model))
 
     def act(self):
-        pass
+        if self.fuel <= 10:
+            self.tank_up()
+        elif isinstance(self.place, Road):
+            self.ride
 
 class AutoLoader(Vehicle):
 
     def __init__(self, model,bucket_capacity=100, warehouse=None, role='loader'):
-        pass
+        super().__init__(model=model)
+        self.bucket_capacity = bucket_capacity
+        self.warehouse = warehouse
+        self.role = role
+        self.truck = None
 
     def __str__(self):
-        pass
+        res= super().__str__()
+        return res + 'Грузим {}'.format(self.truck)
 
     def act(self):
-        pass
+        if self.fuel <= 10:
+            self.tank_up()
+        elif self.truck is None:
+            self.truck = self.warehouse.get_next_truck()
+        elif self.role == 'loader':
+            self.load()
+        else:
+            self.unload()
 
     def load(self):
         pass
@@ -99,3 +127,19 @@ moscow.truck_arrived(truck_1)
 moscow.truck_arrived(truck_2)
 
 hour = 0
+
+while piter.content < TOTAL_CARGO:
+    hour += 1
+    cprint('--------------------1час-----------------------------', color='red')
+    truck_1.act()
+    truck_2.act()
+    loader_1.act()
+    loader_2.act()
+    moscow.act()
+    piter.act()
+    cprint(truck_1, color='cyan')
+    cprint(truck_2, color='cyan')
+    cprint(loader_1, color='cyan')
+    cprint(loader_2, color='cyan')
+    cprint(moscow, color='cyan')
+    cprint(piter, color='cyan')
