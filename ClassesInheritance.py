@@ -17,12 +17,13 @@ class Cat(Pet):
     def sound(self):
         print('мяу')
 
+class Bobtail(Cat):
+    has_tail = False
+
 class Dog(Pet):
     def sound(self):
         print('гав')
 
-my_pet = Pet(name='lola')
+my_pet = Bobtail('kiss')
 my_pet.inspect()
-
-print(my_pet.__class__ is Pet)
 
