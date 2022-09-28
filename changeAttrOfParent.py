@@ -35,20 +35,22 @@ class Robot:
     def operate(self):
         print('робот ездит по кругу')
 
-class WarRobot(Robot):
+class CanFly:
+    def __init__(self):
+        self.altitude = 0 # метров
+        self.velocity = 0 #км/ч
 
-    def __init__(self, model, gun):
-        super().__init__(model=model)
-        self.gun = gun
+class Drone(Robot, CanFly):
 
+    def __init__(self, model):
+        super(Drone, self).__init__(model=model)
+        CanFly.__init__(self)
+    def __str__(self):
+        return '{} модель {}'.format(self.__class__.__name__, self.model) +'' \
+        'высота{} скорость {}'.format(self.altitude, self.velocity)
     def operate(self):
-        super().operate()
-        print('робот охраняет объект')
+        print('ведет разведку с воздуха')
 
-my_rob = WarRobot(model='r2d2',gun='pist')
+my_rob = Drone(model='r2d2')
 my_rob.operate()
-# class CleaningRobot(Robot):
-#
-#     def operate(self):
-#         print('робот пылесосит')
-#
+print(my_rob)
