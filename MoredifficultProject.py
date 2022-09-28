@@ -25,7 +25,7 @@ class Warehouse:
 
     def truck_arrived(self, truck):
         self.queue_in.append(truck)
-        self.place = self
+        truck.place = self
         print('склад {} Прибыл грузовик {}'.format(self.name, truck))
 
     def get_next_truck(self):
@@ -59,6 +59,7 @@ class Vehicle:
 
 class Truck(Vehicle):
 
+    fuel_rate = 50
     def __init__(self, model, body_space=1000):
         super().__init__(model=model)
         self.body_space = body_space
@@ -72,6 +73,7 @@ class Truck(Vehicle):
         return res + 'Груза {}'.format(self.cargo)
 
     def ride(self):
+        self.fuel -= self.fuel_rate
         if self.distance_to_target > self.velocity:
             self.distance_to_target -= self.velocity
             print('{} едет по дороге. осталось {}'.format(
@@ -93,6 +95,7 @@ class Truck(Vehicle):
 
 class AutoLoader(Vehicle):
 
+    fuel_rate = 30
     def __init__(self, model, bucket_capacity=100, warehouse=None, role='loader'):
         super().__init__(model=model)
         self.bucket_capacity = bucket_capacity
@@ -109,12 +112,16 @@ class AutoLoader(Vehicle):
             self.tank_up()
         elif self.truck is None:
             self.truck = self.warehouse.get_next_truck()
+            print('{} взял в работу {}'.format(self.model, self.truck))
+
         elif self.role == 'loader':
             self.load()
         else:
             self.unload()
 
     def load(self):
+
+        self.fuel -= self.fuel_rate
         truck_cargo_rest = self.truck.body_space - self.truck.cargo
         if truck_cargo_rest >= self.bucket_capacity:
             self.warehouse.content -= self.bucket_capacity
@@ -122,17 +129,23 @@ class AutoLoader(Vehicle):
         else:
             self.warehouse.content -= truck_cargo_rest
             self.truck.cargo += truck_cargo_rest
+        print('{} грузил {}'.format(self.model, self.truck))
+
         if self.truck.cargo == self.truck.body_space:
             self.warehouse.truck_ready(self.truck)
             self.truck = None
 
     def unload(self):
+
+        self.fuel -= self.fuel_rate
         if self.truck.cargo >= self.bucket_capacity:
             self.truck.cargo -= self.bucket_capacity
             self.warehouse.content += self.bucket_capacity
         else:
             self.truck.cargo -= self.truck.cargo
             self.warehouse.content +=self.truck.cargo
+        print('{} разгружал {}'.format(self.model, self.truck))
+
         if self.truck.cargo == 0:
             self.warehouse.truck_ready(self.truck)
             self.truck = None
