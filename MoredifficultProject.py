@@ -11,13 +11,14 @@ class Road:
 class Warehouse:
 
     def __init__(self, name, content=0):
-        pass
-
+        self.name = name
+        self.content = content
+        self.road_out = None
     def __str__(self):
-        pass
+        return 'Склад {} груза {}'.format(self.name, self.content)
 
     def set_road_out(self, road):
-        pass
+        self.road_out = road
 
     def truck_arrived(self, truck):
         pass
@@ -99,10 +100,21 @@ class AutoLoader(Vehicle):
             self.unload()
 
     def load(self):
-        pass
+        truck_cargo_rest = self.truck.body_space - self.truck.cargo
+        if truck.cargo.rest >= self.bucket_capacity:
+            self.warehouse.content -= self.bucket_capacity
+            self.truck.cargo += self.bucket_capacity
+        else:
+            self.warehouse.content -= truck_cargo_rest
+            self.truck.cargo += truck_cargo_rest
 
     def unload(self):
-        pass
+        if self.truck.cargo >= self.bucket_capacity:
+            self.truck.cargo -= self.bucket_capacity
+            self.warehouse.content += self.bucket_capacity
+        else:
+            self.truck.cargo -= self.truck.cargo
+            self.warehouse.content +=self.truck.cargo
 
 TOTAL_CARGO = 100000
 
