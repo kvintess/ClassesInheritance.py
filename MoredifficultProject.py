@@ -14,6 +14,9 @@ class Warehouse:
         self.name = name
         self.content = content
         self.road_out = None
+        self.queue_in = []
+        self.queue_out = []
+
     def __str__(self):
         return 'Склад {} груза {}'.format(self.name, self.content)
 
@@ -21,17 +24,20 @@ class Warehouse:
         self.road_out = road
 
     def truck_arrived(self, truck):
-        pass
+        self.queue_in.append(truck)
+        print('склад {} Прибыл грузовик {}'.format(self.name, truck))
 
     def get_next_truck(self):
         pass
 
     def truck_ready(self, truck):
-        pass
+        self.queue_out.append()
+        print('{} грузовик {} готов'.format(self.name, truck))
 
     def act(self):
-        pass
-
+        while self.queue_out:
+            truck = self.queue_out.pop()
+            truck.go_to(road=self.road_out)
 class Vehicle:
     fuel_rate = 0
 
@@ -107,6 +113,9 @@ class AutoLoader(Vehicle):
         else:
             self.warehouse.content -= truck_cargo_rest
             self.truck.cargo += truck_cargo_rest
+        if self.truck.cargo == self.truck.body_space:
+            self.warehouse.truck_ready(self.truck)
+            self.truck = None
 
     def unload(self):
         if self.truck.cargo >= self.bucket_capacity:
@@ -115,6 +124,9 @@ class AutoLoader(Vehicle):
         else:
             self.truck.cargo -= self.truck.cargo
             self.warehouse.content +=self.truck.cargo
+        if self.truck.cargo == 0:
+            self.warehouse.truck_ready(self.truck)
+            self.truck = None
 
 TOTAL_CARGO = 100000
 
